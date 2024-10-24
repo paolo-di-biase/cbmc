@@ -21,6 +21,7 @@ src/goto-analyzer/taint_driver_scripts/.idea/*
 Debug/*
 Release/*
 
+
 # compilation files
 *.lo
 *.od
