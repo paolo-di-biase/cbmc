@@ -500,6 +500,79 @@ int foo()
 }
 ```
 
+## Loop Assigns Inference
+
+When loop invariant clauses are specified but loop assigns are not, CBMC will infer
+loop assigns clauses and use them to apply loop contracts. The idea of the inference
+is to include all the left hand side of assignments in the loop.
+
+For example, in the loop in the following function, we assume that only the loop
+invariant `i <= SIZE` is specified. Then CBMC will infer loop assigns targets `i`, `j`
+and `__CPROVER_object_whole(b)` for the loop.
+
+```
+int j;
+
+void set_j(int i)
+{
+  j = i;
+}
+
+void incr(int *n)
+{
+  (*n)++;
+}
+
+void test_loop_assigns_inference()
+{
+  int *b = malloc(SIZE * sizeof(int));
+  for(unsigned i = 0; i < SIZE; incr(&i))
+    // __CPROVER_assigns(i, j, __CPROVER_object_whole(b))
+    __CPROVER_loop_invariant(i <= SIZE)
+    {
+      int k = i + 1;
+      set_j(i);
+      b[j] = 1;
+    }
+}
+```
+
+The inference algorithm consist of three stages:
+1. function inlining,
+2. collecting assigns targets with local-may-alias analysis,
+3. assigns targets widening.
+
+We do the function inlining first so that we can infer those assigns targets
+hidden in the function call, for example, `j` is assigned to in `set_j`.
+
+Then we collect all targets of assignments in the loop after inlining. In the
+`test_loop_assigns_inference` example, there are five assignments in the loop.
+1. `n = &i`, with assign target `n`. `n` will not be included in the inferred
+set as it is a loop local.
+2. `*n++`, with assign target `*n`. We add `i` to the inferred set as `&i`
+aliasing `n` according to the above assignment.
+3. `k = i + 1`, with assign target `k`. `k` is also a loop local, and will not
+be added to the inferred set.
+4. `j = i` with assign target `j`. So we add `j` to the inferred set.
+5. `b[j] = 1` with assign target `b[j]`. So we add `b[j]` to the inferred set.
+
+At last, we widen `b[j]` to `__CPROVER_object_whole(b)` as its index `j` is
+non constant.
+
+### Limitation
+
+The main limitation of the inference algorithm is that the local-may-alias
+analysis we use is field insensitive, hence it is inaccurate in the cases
+with struct fields.
+
+As an example, for assignment `ptr = box.ptr`, we cannot determine that `ptr`
+aliases `box.ptr`. And hence if we later write to `*ptr`, we will fail to
+infer the assigns target `__CPROVER_object_whole(box.ptr)`.
+
+However, the failed inference does not result in unsoundness.
+That is, CBMC will report assignability-checks failure when the inferred
+assigns clauses are not accurate.
+
 ## Additional Resources
 
 - @ref contracts-functions

@@ -21,6 +21,7 @@ Date: March 2023
 #include <util/std_expr.h>
 #include <util/symbol_table.h>
 
+#include <goto-programs/goto_model.h>
 #include <goto-programs/goto_program.h>
 
 #include <goto-instrument/contracts/loop_contract_config.h>
@@ -242,6 +243,7 @@ class dfcc_cfg_infot
 {
 public:
   dfcc_cfg_infot(
+    goto_modelt &goto_model,
     const irep_idt &function_id,
     goto_functiont &goto_function,
     const exprt &top_level_write_set,

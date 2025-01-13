@@ -12,7 +12,7 @@ void main()
   x1 = &z1;
 
   while(y1 > 0)
-    __CPROVER_loop_invariant(*x1 == __CPROVER_loop_entry(*x1))
+    __CPROVER_loop_invariant(y1 >= 0 && *x1 == __CPROVER_loop_entry(*x1))
     {
       --y1;
       *x1 = *x1 + 1;
@@ -24,7 +24,7 @@ void main()
   x2 = z2;
 
   while(y2 > 0)
-    __CPROVER_loop_invariant(x2 == __CPROVER_loop_entry(x2))
+    __CPROVER_loop_invariant(y2 >= 0 && x2 == __CPROVER_loop_entry(x2))
     {
       --y2;
       x2 = x2 + 1;
@@ -34,11 +34,12 @@ void main()
 
   int y3;
   s s0, s1, *s2 = &s0;
+  s0.n = malloc(sizeof(int));
   s2->n = malloc(sizeof(int));
   s1.n = s2->n;
 
   while(y3 > 0)
-    __CPROVER_loop_invariant(s2->n == __CPROVER_loop_entry(s2->n))
+    __CPROVER_loop_invariant(y3 >= 0 && s2->n == __CPROVER_loop_entry(s2->n))
     {
       --y3;
       s0.n = s0.n + 1;

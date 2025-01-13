@@ -982,10 +982,7 @@ int gcc_modet::gcc_hybrid_binary(compilet &compiler)
   else
   {
     // -c is not given
-    if(cmdline.isset('o'))
-      output_files.push_back(cmdline.get_value('o'));
-    else
-      output_files.push_back("a.out");
+    output_files.push_back(cmdline.value_opt('o').value_or("a.out"));
   }
 
   if(output_files.empty() ||

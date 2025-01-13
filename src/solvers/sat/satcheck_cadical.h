@@ -19,11 +19,14 @@ namespace CaDiCaL // NOLINT(readability/namespace)
   class Solver; // NOLINT(readability/identifiers)
 }
 
-class satcheck_cadicalt : public cnf_solvert, public hardness_collectort
+class satcheck_cadical_baset : public cnf_solvert, public hardness_collectort
 {
 public:
-  explicit satcheck_cadicalt(message_handlert &message_handler);
-  virtual ~satcheck_cadicalt();
+  satcheck_cadical_baset(
+    int preprocessing_limit,
+    int localsearch_limit,
+    message_handlert &);
+  virtual ~satcheck_cadical_baset();
 
   std::string solver_text() const override;
   tvt l_get(literalt a) const override;
@@ -46,6 +49,25 @@ protected:
 
   // NOLINTNEXTLINE(readability/identifiers)
   CaDiCaL::Solver *solver;
+  int preprocessing_limit = 0, localsearch_limit = 0;
+};
+
+class satcheck_cadical_no_preprocessingt : public satcheck_cadical_baset
+{
+public:
+  explicit satcheck_cadical_no_preprocessingt(message_handlert &message_handler)
+    : satcheck_cadical_baset(0, 0, message_handler)
+  {
+  }
+};
+
+class satcheck_cadical_preprocessingt : public satcheck_cadical_baset
+{
+public:
+  explicit satcheck_cadical_preprocessingt(message_handlert &message_handler)
+    : satcheck_cadical_baset(1, 0, message_handler)
+  {
+  }
 };
 
 #endif // CPROVER_SOLVERS_SAT_SATCHECK_CADICAL_H

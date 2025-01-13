@@ -96,6 +96,8 @@ SRC += analyses/ai/ai.cpp \
        pointer-analysis/value_set.cpp \
        solvers/bdd/miniBDD/miniBDD.cpp \
        solvers/flattening/boolbv.cpp \
+       solvers/flattening/boolbv_onehot.cpp \
+       solvers/flattening/boolbv_update_bit.cpp \
        solvers/floatbv/float_utils.cpp \
        solvers/prop/bdd_expr.cpp \
        solvers/sat/external_sat.cpp \
@@ -148,6 +150,7 @@ SRC += analyses/ai/ai.cpp \
        util/get_base_name.cpp \
        util/graph.cpp \
        util/help_formatter.cpp \
+       util/ieee_float.cpp \
        util/interval/add.cpp \
        util/interval/bitwise.cpp \
        util/interval/comparisons.cpp \

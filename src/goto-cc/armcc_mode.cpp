@@ -105,11 +105,8 @@ int armcc_modet::doit()
   }
 
   // armcc's default is .o
-  if(cmdline.isset("default_extension="))
-    compiler.object_file_extension=
-      cmdline.get_value("default_extension=");
-  else
-    compiler.object_file_extension="o";
+  compiler.object_file_extension =
+    cmdline.value_opt("default_extension=").value_or("o");
 
   // note that ARM's default is "unsigned_chars",
   // in contrast to gcc's default!

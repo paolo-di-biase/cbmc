@@ -6,14 +6,13 @@ Author: Michael Tautschnig
 
 \*******************************************************************/
 
-#include <testing-utils/use_catch.h>
-
 #include <util/arith_tools.h>
 #include <util/bitvector_expr.h>
 #include <util/byte_operators.h>
 #include <util/c_types.h>
 #include <util/cmdline.h>
 #include <util/config.h>
+#include <util/mathematical_expr.h>
 #include <util/namespace.h>
 #include <util/pointer_expr.h>
 #include <util/pointer_predicates.h>
@@ -21,6 +20,8 @@ Author: Michael Tautschnig
 #include <util/simplify_utils.h>
 #include <util/std_expr.h>
 #include <util/symbol_table.h>
+
+#include <testing-utils/use_catch.h>
 
 TEST_CASE("Simplify pointer_offset(address of array index)", "[core][util]")
 {
@@ -569,5 +570,19 @@ TEST_CASE("Simplify bitxor", "[core][util]")
     REQUIRE(
       simplify_expr(bitxor_exprt{false_c_bool, false_c_bool}, ns) ==
       false_c_bool);
+  }
+}
+
+TEST_CASE("Simplify power", "[core][util]")
+{
+  const symbol_tablet symbol_table;
+  const namespacet ns{symbol_table};
+
+  SECTION("Simplification for power")
+  {
+    symbol_exprt a{"a", integer_typet{}};
+
+    REQUIRE(
+      simplify_expr(power_exprt{a, from_integer(1, integer_typet{})}, ns) == a);
   }
 }

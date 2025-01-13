@@ -64,6 +64,7 @@ class plus_exprt;
 class pointer_object_exprt;
 class pointer_offset_exprt;
 class popcount_exprt;
+class power_exprt;
 class prophecy_pointer_in_range_exprt;
 class prophecy_r_or_w_ok_exprt;
 class refined_string_exprt;
@@ -76,6 +77,7 @@ class unary_overflow_exprt;
 class unary_plus_exprt;
 class update_exprt;
 class with_exprt;
+class zero_extend_exprt;
 
 class simplify_exprt
 {
@@ -152,6 +154,7 @@ public:
   [[nodiscard]] resultt<> simplify_extractbit(const extractbit_exprt &);
   [[nodiscard]] resultt<> simplify_extractbits(const extractbits_exprt &);
   [[nodiscard]] resultt<> simplify_concatenation(const concatenation_exprt &);
+  [[nodiscard]] resultt<> simplify_zero_extend(const zero_extend_exprt &);
   [[nodiscard]] resultt<> simplify_mult(const mult_exprt &);
   [[nodiscard]] resultt<> simplify_div(const div_exprt &);
   [[nodiscard]] resultt<> simplify_mod(const mod_exprt &);
@@ -161,7 +164,7 @@ public:
   [[nodiscard]] resultt<>
   simplify_floatbv_typecast(const floatbv_typecast_exprt &);
   [[nodiscard]] resultt<> simplify_shifts(const shift_exprt &);
-  [[nodiscard]] resultt<> simplify_power(const binary_exprt &);
+  [[nodiscard]] resultt<> simplify_power(const power_exprt &);
   [[nodiscard]] resultt<> simplify_bitwise(const multi_ary_exprt &);
   [[nodiscard]] resultt<> simplify_if_preorder(const if_exprt &expr);
   [[nodiscard]] resultt<> simplify_if(const if_exprt &);

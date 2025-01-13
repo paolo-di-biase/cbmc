@@ -97,17 +97,35 @@ public:
     : binary_exprt(_base, ID_power, _exp)
   {
   }
+
+  // convenience helper
+  power_exprt(const mp_integer &_base, const exprt &_exp);
+
+  const exprt &base() const
+  {
+    return op0();
+  }
+
+  exprt &base()
+  {
+    return op0();
+  }
+
+  const exprt &exponent() const
+  {
+    return op1();
+  }
+
+  exprt &exponent()
+  {
+    return op1();
+  }
 };
 
 template <>
 inline bool can_cast_expr<power_exprt>(const exprt &base)
 {
   return base.id() == ID_power;
-}
-
-inline void validate_expr(const power_exprt &value)
-{
-  validate_operands(value, 2, "Power must have two operands");
 }
 
 /// \brief Cast an exprt to a \ref power_exprt
@@ -119,18 +137,16 @@ inline void validate_expr(const power_exprt &value)
 inline const power_exprt &to_power_expr(const exprt &expr)
 {
   PRECONDITION(expr.id() == ID_power);
-  const power_exprt &ret = static_cast<const power_exprt &>(expr);
-  validate_expr(ret);
-  return ret;
+  power_exprt::check(expr);
+  return static_cast<const power_exprt &>(expr);
 }
 
 /// \copydoc to_power_expr(const exprt &)
 inline power_exprt &to_power_expr(exprt &expr)
 {
   PRECONDITION(expr.id() == ID_power);
-  power_exprt &ret = static_cast<power_exprt &>(expr);
-  validate_expr(ret);
-  return ret;
+  power_exprt::check(expr);
+  return static_cast<power_exprt &>(expr);
 }
 
 /// \brief Falling factorial power

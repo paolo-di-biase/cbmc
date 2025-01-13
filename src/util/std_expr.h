@@ -1110,6 +1110,11 @@ public:
     : multi_ary_exprt(std::move(_lhs), ID_mult, std::move(_rhs))
   {
   }
+
+  mult_exprt(exprt::operandst factors, typet type)
+    : multi_ary_exprt(ID_mult, std::move(factors), std::move(type))
+  {
+  }
 };
 
 template <>
@@ -2177,6 +2182,43 @@ inline and_exprt &to_and_expr(exprt &expr)
   return static_cast<and_exprt &>(expr);
 }
 
+/// \brief Boolean NAND
+///
+/// When given one operand, this is equivalent to the negation.
+/// When given three or more operands, this is equivalent to the negation
+/// of the and expression with the same operands.
+class nand_exprt : public multi_ary_exprt
+{
+public:
+  nand_exprt(exprt op0, exprt op1)
+    : multi_ary_exprt(std::move(op0), ID_nand, std::move(op1), bool_typet())
+  {
+  }
+
+  explicit nand_exprt(exprt::operandst _operands)
+    : multi_ary_exprt(ID_nand, std::move(_operands), bool_typet())
+  {
+  }
+};
+
+/// \brief Cast an exprt to a \ref nand_exprt
+///
+/// \a expr must be known to be \ref nand_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref nand_exprt
+inline const nand_exprt &to_nand_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_nand);
+  return static_cast<const nand_exprt &>(expr);
+}
+
+/// \copydoc to_nand_expr(const exprt &)
+inline nand_exprt &to_nand_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_nand);
+  return static_cast<nand_exprt &>(expr);
+}
 
 /// \brief Boolean implication
 class implies_exprt:public binary_exprt
@@ -2285,6 +2327,43 @@ inline or_exprt &to_or_expr(exprt &expr)
   return static_cast<or_exprt &>(expr);
 }
 
+/// \brief Boolean NOR
+///
+/// When given one operand, this is equivalent to the negation.
+/// When given three or more operands, this is equivalent to the negation
+/// of the and expression with the same operands.
+class nor_exprt : public multi_ary_exprt
+{
+public:
+  nor_exprt(exprt op0, exprt op1)
+    : multi_ary_exprt(std::move(op0), ID_nor, std::move(op1), bool_typet())
+  {
+  }
+
+  explicit nor_exprt(exprt::operandst _operands)
+    : multi_ary_exprt(ID_nor, std::move(_operands), bool_typet())
+  {
+  }
+};
+
+/// \brief Cast an exprt to a \ref nor_exprt
+///
+/// \a expr must be known to be \ref nor_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref nor_exprt
+inline const nor_exprt &to_nor_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_nor);
+  return static_cast<const nor_exprt &>(expr);
+}
+
+/// \copydoc to_nor_expr(const exprt &)
+inline nor_exprt &to_nor_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_nor);
+  return static_cast<nor_exprt &>(expr);
+}
 
 /// \brief Boolean XOR
 class xor_exprt:public multi_ary_exprt
@@ -2292,6 +2371,11 @@ class xor_exprt:public multi_ary_exprt
 public:
   xor_exprt(exprt _op0, exprt _op1)
     : multi_ary_exprt(std::move(_op0), ID_xor, std::move(_op1), bool_typet())
+  {
+  }
+
+  explicit xor_exprt(exprt::operandst _operands)
+    : multi_ary_exprt(ID_xor, std::move(_operands), bool_typet())
   {
   }
 };
@@ -2321,6 +2405,49 @@ inline xor_exprt &to_xor_expr(exprt &expr)
   return static_cast<xor_exprt &>(expr);
 }
 
+/// \brief Boolean XNOR
+///
+/// When given one operand, this is equivalent to the negation.
+/// When given three or more operands, this is equivalent to the negation
+/// of the xor expression with the same operands.
+class xnor_exprt : public multi_ary_exprt
+{
+public:
+  xnor_exprt(exprt _op0, exprt _op1)
+    : multi_ary_exprt(std::move(_op0), ID_xnor, std::move(_op1), bool_typet())
+  {
+  }
+
+  explicit xnor_exprt(exprt::operandst _operands)
+    : multi_ary_exprt(ID_xnor, std::move(_operands), bool_typet())
+  {
+  }
+};
+
+template <>
+inline bool can_cast_expr<xnor_exprt>(const exprt &base)
+{
+  return base.id() == ID_xnor;
+}
+
+/// \brief Cast an exprt to a \ref xnor_exprt
+///
+/// \a expr must be known to be \ref xnor_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref xnor_exprt
+inline const xnor_exprt &to_xnor_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_xnor);
+  return static_cast<const xnor_exprt &>(expr);
+}
+
+/// \copydoc to_xnor_expr(const exprt &)
+inline xnor_exprt &to_xnor_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_xnor);
+  return static_cast<xnor_exprt &>(expr);
+}
 
 /// \brief Boolean negation
 class not_exprt:public unary_exprt
@@ -3364,6 +3491,9 @@ public:
     operands().push_back(condition);
     operands().push_back(value);
   }
+
+  // a lowering to nested if_exprt
+  exprt lower() const;
 };
 
 template <>

@@ -16,6 +16,7 @@ Author: Daniel Kroening, kroening@kroening.com
 #include "fixedbv.h"
 #include "ieee_float.h"
 #include "invariant.h"
+#include "mathematical_expr.h"
 #include "mathematical_types.h"
 #include "namespace.h"
 #include "pointer_expr.h"
@@ -745,6 +746,8 @@ simplify_exprt::simplify_bitwise(const multi_ary_exprt &expr)
       f = [](bool a, bool b) { return a || b; };
     else if(new_expr.id() == ID_bitxor)
       f = [](bool a, bool b) { return a != b; };
+    else if(new_expr.id() == ID_bitxnor)
+      f = [](bool a, bool b) { return a == b; };
     else
       UNREACHABLE;
 
@@ -998,6 +1001,18 @@ simplify_exprt::simplify_concatenation(const concatenation_exprt &expr)
 }
 
 simplify_exprt::resultt<>
+simplify_exprt::simplify_zero_extend(const zero_extend_exprt &expr)
+{
+  if(!can_cast_type<bitvector_typet>(expr.type()))
+    return unchanged(expr);
+
+  if(!can_cast_type<bitvector_typet>(expr.op().type()))
+    return unchanged(expr);
+
+  return changed(simplify_node(expr.lower()));
+}
+
+simplify_exprt::resultt<>
 simplify_exprt::simplify_shifts(const shift_exprt &expr)
 {
   if(!can_cast_type<bitvector_typet>(expr.type()))
@@ -1106,18 +1121,24 @@ simplify_exprt::simplify_shifts(const shift_exprt &expr)
 }
 
 simplify_exprt::resultt<>
-simplify_exprt::simplify_power(const binary_exprt &expr)
+simplify_exprt::simplify_power(const power_exprt &expr)
 {
   if(!is_number(expr.type()))
     return unchanged(expr);
 
-  const auto base = numeric_cast<mp_integer>(expr.op0());
-  const auto exponent = numeric_cast<mp_integer>(expr.op1());
-
-  if(!base.has_value())
-    return unchanged(expr);
+  const auto base = numeric_cast<mp_integer>(expr.base());
+  const auto exponent = numeric_cast<mp_integer>(expr.exponent());
 
   if(!exponent.has_value())
+    return unchanged(expr);
+
+  if(exponent.value() == 0)
+    return from_integer(1, expr.type());
+
+  if(exponent.value() == 1)
+    return expr.base();
+
+  if(!base.has_value())
     return unchanged(expr);
 
   mp_integer result = power(*base, *exponent);

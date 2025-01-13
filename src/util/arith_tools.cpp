@@ -31,8 +31,7 @@ bool to_integer(const constant_exprt &expr, mp_integer &int_value)
       return false;
     }
   }
-  else if(type_id==ID_integer ||
-          type_id==ID_natural)
+  else if(type_id == ID_integer || type_id == ID_natural || type_id == ID_range)
   {
     int_value=string2integer(id2string(value));
     return false;
@@ -111,6 +110,13 @@ constant_exprt from_integer(
   {
     PRECONDITION(int_value >= 0);
     return constant_exprt(integer2string(int_value), type);
+  }
+  else if(type_id == ID_range)
+  {
+    auto &range_type = to_range_type(type);
+    PRECONDITION(int_value >= range_type.get_from());
+    PRECONDITION(int_value <= range_type.get_to());
+    return constant_exprt{integer2string(int_value), type};
   }
   else if(type_id==ID_unsignedbv)
   {

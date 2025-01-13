@@ -17,7 +17,7 @@ Author: Michael Tautschnig
 
 #  include <cadical.hpp>
 
-tvt satcheck_cadicalt::l_get(literalt a) const
+tvt satcheck_cadical_baset::l_get(literalt a) const
 {
   if(a.is_constant())
     return tvt(a.sign());
@@ -38,12 +38,12 @@ tvt satcheck_cadicalt::l_get(literalt a) const
   return result;
 }
 
-std::string satcheck_cadicalt::solver_text() const
+std::string satcheck_cadical_baset::solver_text() const
 {
   return std::string("CaDiCaL ") + solver->version();
 }
 
-void satcheck_cadicalt::lcnf(const bvt &bv)
+void satcheck_cadical_baset::lcnf(const bvt &bv)
 {
   for(const auto &lit : bv)
   {
@@ -85,7 +85,7 @@ void satcheck_cadicalt::lcnf(const bvt &bv)
   clause_counter++;
 }
 
-propt::resultt satcheck_cadicalt::do_prop_solve(const bvt &assumptions)
+propt::resultt satcheck_cadical_baset::do_prop_solve(const bvt &assumptions)
 {
   INVARIANT(status != statust::ERROR, "there cannot be an error");
 
@@ -108,6 +108,12 @@ propt::resultt satcheck_cadicalt::do_prop_solve(const bvt &assumptions)
     if(!a.is_true())
       solver->assume(a.dimacs());
 
+  // set preprocessing and inprocessing limits
+  auto limit1_ret = solver->limit("preprocessing", preprocessing_limit);
+  CHECK_RETURN(limit1_ret);
+  auto limit2_ret = solver->limit("localsearch", localsearch_limit);
+  CHECK_RETURN(limit2_ret);
+
   switch(solver->solve())
   {
   case 10:
@@ -128,24 +134,30 @@ propt::resultt satcheck_cadicalt::do_prop_solve(const bvt &assumptions)
   return resultt::P_UNSATISFIABLE;
 }
 
-void satcheck_cadicalt::set_assignment(literalt a, bool value)
+void satcheck_cadical_baset::set_assignment(literalt a, bool value)
 {
   INVARIANT(!a.is_constant(), "cannot set an assignment for a constant");
   INVARIANT(false, "method not supported");
 }
 
-satcheck_cadicalt::satcheck_cadicalt(message_handlert &message_handler)
-  : cnf_solvert(message_handler), solver(new CaDiCaL::Solver())
+satcheck_cadical_baset::satcheck_cadical_baset(
+  int _preprocessing_limit,
+  int _localsearch_limit,
+  message_handlert &message_handler)
+  : cnf_solvert(message_handler),
+    solver(new CaDiCaL::Solver()),
+    preprocessing_limit(_preprocessing_limit),
+    localsearch_limit(_localsearch_limit)
 {
   solver->set("quiet", 1);
 }
 
-satcheck_cadicalt::~satcheck_cadicalt()
+satcheck_cadical_baset::~satcheck_cadical_baset()
 {
   delete solver;
 }
 
-bool satcheck_cadicalt::is_in_conflict(literalt a) const
+bool satcheck_cadical_baset::is_in_conflict(literalt a) const
 {
   return solver->failed(a.dimacs());
 }

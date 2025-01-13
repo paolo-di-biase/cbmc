@@ -32,8 +32,8 @@ exprt convert_character_literal(
     PRECONDITION(src[1] == '\'');
     PRECONDITION(src[src.size() - 1] == '\'');
 
-    std::basic_string<unsigned int> value=
-      unescape_wide_string(std::string(src, 2, src.size()-3));
+    std::basic_string<char32_t> value =
+      unescape_wide_string(std::string(src, 2, src.size() - 3));
     // the parser rejects empty character constants
     CHECK_RETURN(!value.empty());
 

@@ -37,6 +37,17 @@ extractbits_exprt::extractbits_exprt(
   add_to_operands(std::move(_src), from_integer(_index, integer_typet()));
 }
 
+update_bit_exprt::update_bit_exprt(
+  exprt _src,
+  const std::size_t _index,
+  exprt _new_value)
+  : update_bit_exprt(
+      std::move(_src),
+      from_integer(_index, integer_typet()),
+      std::move(_new_value))
+{
+}
+
 exprt update_bit_exprt::lower() const
 {
   const auto width = to_bitvector_type(type()).get_width();
@@ -54,8 +65,8 @@ exprt update_bit_exprt::lower() const
     typecast_exprt(src(), src_bv_type), bitnot_exprt(mask_shifted));
 
   // zero-extend the replacement bit to match src
-  auto new_value_casted = typecast_exprt(
-    typecast_exprt(new_value(), unsignedbv_typet(width)), src_bv_type);
+  auto new_value_bv = typecast_exprt{new_value(), bv_typet{1}};
+  auto new_value_casted = zero_extend_exprt{new_value_bv, src_bv_type};
 
   // shift the replacement bits
   auto new_value_shifted = shl_exprt(new_value_casted, index());
@@ -85,7 +96,7 @@ exprt update_bits_exprt::lower() const
     bitand_exprt(typecast_exprt(src(), src_bv_type), mask_shifted);
 
   // zero-extend or shrink the replacement bits to match src
-  auto new_value_casted = typecast_exprt(new_value(), src_bv_type);
+  auto new_value_casted = zero_extend_exprt{new_value(), src_bv_type};
 
   // shift the replacement bits
   auto new_value_shifted = shl_exprt(new_value_casted, index());
@@ -278,4 +289,54 @@ exprt find_first_set_exprt::lower() const
   minus_exprt result{from_integer(int_width, x.type()), clz.lower()};
 
   return typecast_exprt::conditional_cast(result, type());
+}
+
+exprt zero_extend_exprt::lower() const
+{
+  const auto old_width = to_bitvector_type(op().type()).get_width();
+  const auto new_width = to_bitvector_type(type()).get_width();
+
+  if(new_width > old_width)
+  {
+    return concatenation_exprt{
+      bv_typet{new_width - old_width}.all_zeros_expr(), op(), type()};
+  }
+  else // new_width <= old_width
+  {
+    return extractbits_exprt{op(), 0, type()};
+  }
+}
+
+static exprt onehot_lowering(const exprt &expr)
+{
+  exprt one_seen = false_exprt{};
+  const auto width = to_bitvector_type(expr.type()).get_width();
+  exprt::operandst more_than_one_seen_disjuncts;
+  more_than_one_seen_disjuncts.reserve(width);
+
+  for(std::size_t i = 0; i < width; i++)
+  {
+    auto bit = extractbit_exprt{expr, i};
+    more_than_one_seen_disjuncts.push_back(and_exprt{bit, one_seen});
+    one_seen = or_exprt{one_seen, bit};
+  }
+
+  auto more_than_one_seen = disjunction(more_than_one_seen_disjuncts);
+
+  return and_exprt{one_seen, not_exprt{more_than_one_seen}};
+}
+
+exprt onehot_exprt::lower() const
+{
+  auto symbol = symbol_exprt{"onehot-op", op().type()};
+
+  return let_exprt{symbol, op(), onehot_lowering(symbol)};
+}
+
+exprt onehot0_exprt::lower() const
+{
+  auto symbol = symbol_exprt{"onehot-op", op().type()};
+
+  // same as onehot, but on flipped operand bits
+  return let_exprt{symbol, bitnot_exprt{op()}, onehot_lowering(symbol)};
 }

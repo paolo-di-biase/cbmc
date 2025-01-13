@@ -18,8 +18,7 @@ Author: Daniel Kroening, kroening@kroening.com
 
 #include "unescape_string.h"
 
-std::basic_string<unsigned int> convert_one_string_literal(
-  const std::string &src)
+std::basic_string<char32_t> convert_one_string_literal(const std::string &src)
 {
   PRECONDITION(src.size() >= 2);
 
@@ -28,8 +27,8 @@ std::basic_string<unsigned int> convert_one_string_literal(
     PRECONDITION(src[src.size() - 1] == '"');
     PRECONDITION(src[2] == '"');
 
-    std::basic_string<unsigned int> value=
-      unescape_wide_string(std::string(src, 3, src.size()-4));
+    std::basic_string<char32_t> value =
+      unescape_wide_string(std::string(src, 3, src.size() - 4));
 
     // turn into utf-8
     const std::string utf8_value = utf32_native_endian_to_utf8(value);
@@ -57,7 +56,7 @@ std::basic_string<unsigned int> convert_one_string_literal(
       unescape_string(std::string(src, 1, src.size()-2));
 
     // pad into wide string
-    std::basic_string<unsigned int> value;
+    std::basic_string<char32_t> value;
     value.resize(char_value.size());
     for(std::size_t i=0; i<char_value.size(); i++)
       value[i]=char_value[i];
@@ -72,7 +71,7 @@ exprt convert_string_literal(const std::string &src)
   // e.g., something like "asd" "xyz".
   // GCC allows "asd" L"xyz"!
 
-  std::basic_string<unsigned int> value;
+  std::basic_string<char32_t> value;
 
   char wide=0;
 
@@ -101,8 +100,7 @@ exprt convert_string_literal(const std::string &src)
     INVARIANT(j < src.size(), "non-terminated string constant '" + src + "'");
 
     std::string tmp_src=std::string(src, i, j-i+1);
-    std::basic_string<unsigned int> tmp_value=
-      convert_one_string_literal(tmp_src);
+    std::basic_string<char32_t> tmp_value = convert_one_string_literal(tmp_src);
     value.append(tmp_value);
     i=j;
   }

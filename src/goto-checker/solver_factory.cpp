@@ -297,7 +297,8 @@ get_sat_solver(message_handlert &message_handler, const optionst &options)
     else if(solver_option == "cadical")
     {
 #if defined SATCHECK_CADICAL
-      return make_satcheck_prop<satcheck_cadicalt>(message_handler, options);
+      return make_satcheck_prop<satcheck_cadical_no_preprocessingt>(
+        message_handler, options);
 #else
       emit_solver_warning(message_handler, "cadical");
 #endif

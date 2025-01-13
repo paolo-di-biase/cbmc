@@ -165,6 +165,8 @@ bvt boolbvt::convert_bitvector(const exprt &expr)
     return convert_replication(to_replication_expr(expr));
   else if(expr.id()==ID_extractbits)
     return convert_extractbits(to_extractbits_expr(expr));
+  else if(expr.id() == ID_zero_extend)
+    return convert_bitvector(to_zero_extend_expr(expr).lower());
   else if(expr.id()==ID_bitnot || expr.id()==ID_bitand ||
           expr.id()==ID_bitor || expr.id()==ID_bitxor ||
           expr.id()==ID_bitxnor || expr.id()==ID_bitnor ||
@@ -410,8 +412,10 @@ literalt boolbvt::convert_rest(const exprt &expr)
           expr.id()==ID_reduction_nor || expr.id()==ID_reduction_nand ||
           expr.id()==ID_reduction_xor || expr.id()==ID_reduction_xnor)
     return convert_reduction(to_unary_expr(expr));
-  else if(expr.id()==ID_onehot || expr.id()==ID_onehot0)
-    return convert_onehot(to_unary_expr(expr));
+  else if(expr.id() == ID_onehot)
+    return convert_onehot(to_onehot_expr(expr));
+  else if(expr.id() == ID_onehot0)
+    return convert_onehot(to_onehot0_expr(expr));
   else if(
     const auto binary_overflow =
       expr_try_dynamic_cast<binary_overflow_exprt>(expr))

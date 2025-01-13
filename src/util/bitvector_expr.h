@@ -128,6 +128,11 @@ public:
     : multi_ary_exprt(_op0, ID_bitor, std::move(_op1), _op0.type())
   {
   }
+
+  bitor_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitor, std::move(_operands), std::move(_type))
+  {
+  }
 };
 
 template <>
@@ -155,12 +160,61 @@ inline bitor_exprt &to_bitor_expr(exprt &expr)
   return static_cast<bitor_exprt &>(expr);
 }
 
+/// \brief Bit-wise NOR
+///
+/// When given one operand, this is equivalent to the bit-wise negation.
+/// When given three or more operands, this is equivalent to the bit-wise
+/// negation of the bitand expression with the same operands.
+class bitnor_exprt : public multi_ary_exprt
+{
+public:
+  bitnor_exprt(exprt _op0, exprt _op1)
+    : multi_ary_exprt(std::move(_op0), ID_bitnor, std::move(_op1))
+  {
+  }
+
+  bitnor_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitnor, std::move(_operands), std::move(_type))
+  {
+  }
+};
+
+template <>
+inline bool can_cast_expr<bitnor_exprt>(const exprt &base)
+{
+  return base.id() == ID_bitnor;
+}
+
+/// \brief Cast an exprt to a \ref bitnor_exprt
+///
+/// \a expr must be known to be \ref bitnor_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref bitnor_exprt
+inline const bitnor_exprt &to_bitnor_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitnor);
+  return static_cast<const bitnor_exprt &>(expr);
+}
+
+/// \copydoc to_bitnor_expr(const exprt &)
+inline bitnor_exprt &to_bitnor_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitnor);
+  return static_cast<bitnor_exprt &>(expr);
+}
+
 /// \brief Bit-wise XOR
 class bitxor_exprt : public multi_ary_exprt
 {
 public:
   bitxor_exprt(exprt _op0, exprt _op1)
     : multi_ary_exprt(std::move(_op0), ID_bitxor, std::move(_op1))
+  {
+  }
+
+  bitxor_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitxor, std::move(_operands), std::move(_type))
   {
   }
 };
@@ -190,12 +244,63 @@ inline bitxor_exprt &to_bitxor_expr(exprt &expr)
   return static_cast<bitxor_exprt &>(expr);
 }
 
+/// \brief Bit-wise XNOR
+///
+/// When given one operand, this is equivalent to the bit-wise negation.
+/// When given three or more operands, this is equivalent to the bit-wise
+/// negation of the bitxor expression with the same operands.
+class bitxnor_exprt : public multi_ary_exprt
+{
+public:
+  bitxnor_exprt(exprt _op0, exprt _op1)
+    : multi_ary_exprt(_op0, ID_bitxnor, _op1, _op0.type())
+  {
+  }
+
+  bitxnor_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitxnor, std::move(_operands), std::move(_type))
+  {
+  }
+};
+
+template <>
+inline bool can_cast_expr<bitxnor_exprt>(const exprt &base)
+{
+  return base.id() == ID_bitxnor;
+}
+
+/// \brief Cast an exprt to a \ref bitxnor_exprt
+///
+/// \a expr must be known to be \ref bitxnor_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref bitxnor_exprt
+inline const bitxnor_exprt &to_bitxnor_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitxnor);
+  bitxnor_exprt::check(expr, validation_modet::INVARIANT);
+  return static_cast<const bitxnor_exprt &>(expr);
+}
+
+/// \copydoc to_bitxnor_expr(const exprt &)
+inline bitxnor_exprt &to_bitxnor_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitxnor);
+  bitxnor_exprt::check(expr, validation_modet::INVARIANT);
+  return static_cast<bitxnor_exprt &>(expr);
+}
+
 /// \brief Bit-wise AND
 class bitand_exprt : public multi_ary_exprt
 {
 public:
   bitand_exprt(const exprt &_op0, exprt _op1)
     : multi_ary_exprt(_op0, ID_bitand, std::move(_op1), _op0.type())
+  {
+  }
+
+  bitand_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitand, std::move(_operands), std::move(_type))
   {
   }
 };
@@ -223,6 +328,50 @@ inline bitand_exprt &to_bitand_expr(exprt &expr)
 {
   PRECONDITION(expr.id() == ID_bitand);
   return static_cast<bitand_exprt &>(expr);
+}
+
+/// \brief Bit-wise NAND
+///
+/// When given one operand, this is equivalent to the bit-wise negation.
+/// When given three or more operands, this is equivalent to the bit-wise
+/// negation of the bitand expression with the same operands.
+class bitnand_exprt : public multi_ary_exprt
+{
+public:
+  bitnand_exprt(exprt _op0, exprt _op1)
+    : multi_ary_exprt(std::move(_op0), ID_bitnand, std::move(_op1))
+  {
+  }
+
+  bitnand_exprt(exprt::operandst _operands, typet _type)
+    : multi_ary_exprt(ID_bitnand, std::move(_operands), std::move(_type))
+  {
+  }
+};
+
+template <>
+inline bool can_cast_expr<bitnand_exprt>(const exprt &base)
+{
+  return base.id() == ID_bitnand;
+}
+
+/// \brief Cast an exprt to a \ref bitnand_exprt
+///
+/// \a expr must be known to be \ref bitnand_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref bitnand_exprt
+inline const bitnand_exprt &to_bitnand_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitnand);
+  return static_cast<const bitnand_exprt &>(expr);
+}
+
+/// \copydoc to_bitnand_expr(const exprt &)
+inline bitnand_exprt &to_bitnand_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_bitnand);
+  return static_cast<bitnand_exprt &>(expr);
 }
 
 /// \brief A base class for shift and rotate operators
@@ -1661,6 +1810,120 @@ inline find_first_set_exprt &to_find_first_set_expr(exprt &expr)
   find_first_set_exprt &ret = static_cast<find_first_set_exprt &>(expr);
   validate_expr(ret);
   return ret;
+}
+
+/// \brief zero extension
+/// The operand is converted to the given type by either
+/// a) truncating if the new type is shorter, or
+/// b) padding with most-significant zero bits if the new type is larger, or
+/// c) reinterprets the operand as the given type if their widths match.
+class zero_extend_exprt : public unary_exprt
+{
+public:
+  zero_extend_exprt(exprt _op, typet _type)
+    : unary_exprt(ID_zero_extend, std::move(_op), std::move(_type))
+  {
+  }
+
+  // a lowering to extraction or concatenation
+  exprt lower() const;
+};
+
+template <>
+inline bool can_cast_expr<zero_extend_exprt>(const exprt &base)
+{
+  return base.id() == ID_zero_extend;
+}
+
+/// \brief Cast an exprt to a \ref zero_extend_exprt
+///
+/// \a expr must be known to be \ref zero_extend_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref zero_extend_exprt
+inline const zero_extend_exprt &to_zero_extend_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_zero_extend);
+  zero_extend_exprt::check(expr);
+  return static_cast<const zero_extend_exprt &>(expr);
+}
+
+/// \copydoc to_zero_extend_expr(const exprt &)
+inline zero_extend_exprt &to_zero_extend_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_zero_extend);
+  zero_extend_exprt::check(expr);
+  return static_cast<zero_extend_exprt &>(expr);
+}
+
+/// \brief A Boolean expression returning true iff the given
+/// operand consists of exactly one '1' and '0' otherwise.
+class onehot_exprt : public unary_predicate_exprt
+{
+public:
+  explicit onehot_exprt(exprt _op)
+    : unary_predicate_exprt(ID_onehot, std::move(_op))
+  {
+  }
+
+  /// lowering to extractbit
+  exprt lower() const;
+};
+
+/// \brief Cast an exprt to a \ref onehot_exprt
+///
+/// \a expr must be known to be \ref onehot_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref onehot_exprt
+inline const onehot_exprt &to_onehot_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_onehot);
+  onehot_exprt::check(expr);
+  return static_cast<const onehot_exprt &>(expr);
+}
+
+/// \copydoc to_onehot_expr(const exprt &)
+inline onehot_exprt &to_onehot_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_onehot);
+  onehot_exprt::check(expr);
+  return static_cast<onehot_exprt &>(expr);
+}
+
+/// \brief A Boolean expression returning true iff the given
+/// operand consists of exactly one '0' and '1' otherwise.
+class onehot0_exprt : public unary_predicate_exprt
+{
+public:
+  explicit onehot0_exprt(exprt _op)
+    : unary_predicate_exprt(ID_onehot0, std::move(_op))
+  {
+  }
+
+  /// lowering to extractbit
+  exprt lower() const;
+};
+
+/// \brief Cast an exprt to a \ref onehot0_exprt
+///
+/// \a expr must be known to be \ref onehot0_exprt.
+///
+/// \param expr: Source expression
+/// \return Object of type \ref onehot0_exprt
+inline const onehot0_exprt &to_onehot0_expr(const exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_onehot0);
+  onehot0_exprt::check(expr);
+  return static_cast<const onehot0_exprt &>(expr);
+}
+
+/// \copydoc to_onehot0_expr(const exprt &)
+inline onehot0_exprt &to_onehot0_expr(exprt &expr)
+{
+  PRECONDITION(expr.id() == ID_onehot0);
+  onehot0_exprt::check(expr);
+  return static_cast<onehot0_exprt &>(expr);
 }
 
 #endif // CPROVER_UTIL_BITVECTOR_EXPR_H

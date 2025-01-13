@@ -1220,12 +1220,9 @@ void smt2_convt::convert_expr(const exprt &expr)
 
     convert_expr(expr.operands().front());
   }
-  else if(expr.id()==ID_concatenation ||
-          expr.id()==ID_bitand ||
-          expr.id()==ID_bitor ||
-          expr.id()==ID_bitxor ||
-          expr.id()==ID_bitnand ||
-          expr.id()==ID_bitnor)
+  else if(
+    expr.id() == ID_concatenation || expr.id() == ID_bitand ||
+    expr.id() == ID_bitor || expr.id() == ID_bitxor)
   {
     DATA_INVARIANT_WITH_DIAGNOSTICS(
       expr.operands().size() >= 2,
@@ -1254,6 +1251,60 @@ void smt2_convt::convert_expr(const exprt &expr)
     }
 
     out << ")";
+  }
+  else if(
+    expr.id() == ID_bitxnor || expr.id() == ID_bitnand ||
+    expr.id() == ID_bitnor)
+  {
+    // SMT-LIB only has these as a binary expression,
+    // owing to their ambiguity.
+    if(expr.operands().size() == 2)
+    {
+      const auto &binary_expr = to_binary_expr(expr);
+
+      out << '(';
+      if(binary_expr.id() == ID_bitxnor)
+        out << "bvxnor";
+      else if(binary_expr.id() == ID_bitnand)
+        out << "bvnand";
+      else if(binary_expr.id() == ID_bitnor)
+        out << "bvnor";
+      out << ' ';
+      flatten2bv(binary_expr.op0());
+      out << ' ';
+      flatten2bv(binary_expr.op1());
+      out << ')';
+    }
+    else if(expr.operands().size() == 1)
+    {
+      out << "(bvnot ";
+      flatten2bv(to_unary_expr(expr).op());
+      out << ')';
+    }
+    else if(expr.operands().size() >= 3)
+    {
+      out << "(bvnot (";
+      if(expr.id() == ID_bitxnor)
+        out << "bvxor";
+      else if(expr.id() == ID_bitnand)
+        out << "bvand";
+      else if(expr.id() == ID_bitnor)
+        out << "bvor";
+
+      for(const auto &op : expr.operands())
+      {
+        out << ' ';
+        flatten2bv(op);
+      }
+
+      out << "))"; // bvX, bvnot
+    }
+    else
+    {
+      DATA_INVARIANT(
+        expr.operands().size() >= 1,
+        expr.id_string() + " should have at least one operand");
+    }
   }
   else if(expr.id()==ID_bitnot)
   {
@@ -1361,6 +1412,38 @@ void smt2_convt::convert_expr(const exprt &expr)
       convert_expr(op);
     }
     out << ")";
+  }
+  else if(expr.id() == ID_nand || expr.id() == ID_nor || expr.id() == ID_xnor)
+  {
+    DATA_INVARIANT(
+      expr.is_boolean(),
+      "logical nand, nor, xnor expressions should have Boolean type");
+    DATA_INVARIANT(
+      expr.operands().size() >= 1,
+      "logical nand, nor, xnor expressions should have at least one operand");
+
+    // SMT-LIB doesn't have nand, nor, xnor
+    out << "(not ";
+    if(expr.operands().size() == 1)
+      convert_expr(to_multi_ary_expr(expr).op0());
+    else
+    {
+      if(expr.id() == ID_nand)
+        out << "(and";
+      else if(expr.id() == ID_nor)
+        out << "(and";
+      else if(expr.id() == ID_xnor)
+        out << "(xor";
+      else
+        DATA_INVARIANT(false, "unexpected expression");
+      for(const auto &op : expr.operands())
+      {
+        out << ' ';
+        convert_expr(op);
+      }
+      out << ')'; // or, and, xor
+    }
+    out << ')'; // not
   }
   else if(expr.id()==ID_implies)
   {
@@ -1586,7 +1669,8 @@ void smt2_convt::convert_expr(const exprt &expr)
       // SMT2 requires the shift distance to have the same width as
       // the value that is shifted -- odd!
 
-      if(shift_expr.distance().type().id() == ID_integer)
+      const auto &distance_type = shift_expr.distance().type();
+      if(distance_type.id() == ID_integer || distance_type.id() == ID_natural)
       {
         const mp_integer i =
           numeric_cast_v<mp_integer>(to_constant_expr(shift_expr.distance()));
@@ -1597,13 +1681,12 @@ void smt2_convt::convert_expr(const exprt &expr)
         convert_expr(tmp);
       }
       else if(
-        shift_expr.distance().type().id() == ID_signedbv ||
-        shift_expr.distance().type().id() == ID_unsignedbv ||
-        shift_expr.distance().type().id() == ID_c_enum ||
-        shift_expr.distance().type().id() == ID_c_bool)
+        distance_type.id() == ID_signedbv ||
+        distance_type.id() == ID_unsignedbv ||
+        distance_type.id() == ID_c_enum || distance_type.id() == ID_c_bool)
       {
         std::size_t width_op0 = boolbv_width(shift_expr.op().type());
-        std::size_t width_op1 = boolbv_width(shift_expr.distance().type());
+        std::size_t width_op1 = boolbv_width(distance_type);
 
         if(width_op0==width_op1)
           convert_expr(shift_expr.distance());
@@ -1621,9 +1704,11 @@ void smt2_convt::convert_expr(const exprt &expr)
         }
       }
       else
+      {
         UNEXPECTEDCASE(
           "unsupported distance type for " + shift_expr.id_string() + ": " +
-          type.id_string());
+          distance_type.id_string());
+      }
 
       out << ")"; // bv*sh
     }
@@ -1830,6 +1915,14 @@ void smt2_convt::convert_expr(const exprt &expr)
       convert_expr(tmp);
       out << ")) #b1)"; // bvlshr, extract, =
     }
+  }
+  else if(expr.id() == ID_onehot)
+  {
+    convert_expr(to_onehot_expr(expr).lower());
+  }
+  else if(expr.id() == ID_onehot0)
+  {
+    convert_expr(to_onehot0_expr(expr).lower());
   }
   else if(expr.id()==ID_extractbits)
   {
@@ -2456,6 +2549,10 @@ void smt2_convt::convert_expr(const exprt &expr)
   {
     convert_expr(simplify_expr(to_bitreverse_expr(expr).lower(), ns));
   }
+  else if(expr.id() == ID_zero_extend)
+  {
+    convert_expr(to_zero_extend_expr(expr).lower());
+  }
   else if(expr.id() == ID_function_application)
   {
     const auto &function_application_expr = to_function_application_expr(expr);
@@ -2476,10 +2573,16 @@ void smt2_convt::convert_expr(const exprt &expr)
       out << ')';
     }
   }
+  else if(expr.id() == ID_cond)
+  {
+    // use the lowering
+    convert_expr(to_cond_expr(expr).lower());
+  }
   else
     INVARIANT_WITH_DIAGNOSTICS(
       false,
-      "smt2_convt::convert_expr should not be applied to unsupported type",
+      "smt2_convt::convert_expr should not be applied to unsupported "
+      "expression",
       expr.id_string());
 }
 
@@ -2961,32 +3064,13 @@ void smt2_convt::convert_typecast(const typecast_exprt &expr)
 
     if(src_type.id()==ID_bool)
     {
-      constant_exprt val(irep_idt(), dest_type);
-
-      ieee_floatt a(dest_floatbv_type);
-
-      mp_integer significand;
-      mp_integer exponent;
-
       out << "(ite ";
       convert_expr(src);
-      out << " ";
-
-      significand = 1;
-      exponent = 0;
-      a.build(significand, exponent);
-      val.set_value(integer2bvrep(a.pack(), a.spec.width()));
-
-      convert_constant(val);
-      out << " ";
-
-      significand = 0;
-      exponent = 0;
-      a.build(significand, exponent);
-      val.set_value(integer2bvrep(a.pack(), a.spec.width()));
-
-      convert_constant(val);
-      out << ")";
+      out << ' ';
+      convert_constant(ieee_floatt::one(dest_floatbv_type).to_expr());
+      out << ' ';
+      convert_constant(ieee_floatt::zero(dest_floatbv_type).to_expr());
+      out << ')';
     }
     else if(src_type.id()==ID_c_bool)
     {
@@ -3556,9 +3640,11 @@ void smt2_convt::convert_relation(const binary_relation_exprt &expr)
 {
   const typet &op_type=expr.op0().type();
 
-  if(op_type.id()==ID_unsignedbv ||
-     op_type.id()==ID_bv)
+  if(
+    op_type.id() == ID_unsignedbv || op_type.id() == ID_bv ||
+    op_type.id() == ID_range)
   {
+    // The range type is encoded in binary
     out << "(";
     if(expr.id()==ID_le)
       out << "bvule";

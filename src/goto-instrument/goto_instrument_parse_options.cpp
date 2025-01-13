@@ -241,8 +241,8 @@ int goto_instrument_parse_optionst::doit()
 
         if(cmdline.isset("log"))
         {
-          std::string filename=cmdline.get_value("log");
-          bool have_file=!filename.empty() && filename!="-";
+          std::string filename = cmdline.value_opt("log").value_or("-");
+          bool have_file = filename != "-";
 
           jsont result=goto_unwind.output_log_json();
 
@@ -1319,8 +1319,8 @@ void goto_instrument_parse_optionst::instrument_goto_program()
     }
     else
     {
-      std::string filename=cmdline.get_value("log");
-      bool have_file=!filename.empty() && filename!="-";
+      std::string filename = cmdline.value_opt("log").value_or("-");
+      bool have_file = filename != "-";
 
       jsont result = goto_function_inline_and_log(
         goto_model, function, ui_message_handler, true, caching);

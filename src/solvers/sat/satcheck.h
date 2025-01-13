@@ -137,8 +137,8 @@ typedef satcheck_glucose_no_simplifiert satcheck_no_simplifiert;
 
 #elif defined SATCHECK_CADICAL
 
-typedef satcheck_cadicalt satcheckt;
-typedef satcheck_cadicalt satcheck_no_simplifiert;
+typedef satcheck_cadical_no_preprocessingt satcheckt;
+typedef satcheck_cadical_no_preprocessingt satcheck_no_simplifiert;
 
 #endif
 

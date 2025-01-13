@@ -89,7 +89,7 @@ int make_identifier()
       for(; *p!=0 && digits>0; digits--, p++);
       p--; // go back for p++ later
       
-      std::basic_string<unsigned> utf32;
+      std::basic_string<char32_t> utf32;
       utf32+=letter;
       
       // turn into utf-8

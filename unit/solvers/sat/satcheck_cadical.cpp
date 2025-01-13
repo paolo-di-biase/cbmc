@@ -23,7 +23,7 @@ SCENARIO("satcheck_cadical", "[core][solvers][sat][satcheck_cadical]")
 
   GIVEN("A satisfiable formula f")
   {
-    satcheck_cadicalt satcheck(message_handler);
+    satcheck_cadical_no_preprocessingt satcheck(message_handler);
     literalt f = satcheck.new_variable();
     satcheck.l_set_to_true(f);
 
@@ -42,7 +42,7 @@ SCENARIO("satcheck_cadical", "[core][solvers][sat][satcheck_cadical]")
 
   GIVEN("An unsatisfiable formula f && !f")
   {
-    satcheck_cadicalt satcheck(message_handler);
+    satcheck_cadical_no_preprocessingt satcheck(message_handler);
     literalt f = satcheck.new_variable();
     satcheck.l_set_to_true(satcheck.land(f, !f));
 
@@ -54,7 +54,7 @@ SCENARIO("satcheck_cadical", "[core][solvers][sat][satcheck_cadical]")
 
   GIVEN("An unsatisfiable formula false implied by a")
   {
-    satcheck_cadicalt satcheck(message_handler);
+    satcheck_cadical_no_preprocessingt satcheck(message_handler);
     literalt a = satcheck.new_variable();
     literalt a_implies_false = satcheck.lor(!a, const_literal(false));
     satcheck.l_set_to_true(a_implies_false);

@@ -20,7 +20,7 @@ static void append_universal_char(
   unsigned int value,
   std::string &dest)
 {
-  std::basic_string<unsigned int> value_str(1, value);
+  std::basic_string<char32_t> value_str(1, value);
 
   // turn into utf-8
   const std::string utf8_value = utf32_native_endian_to_utf8(value_str);
@@ -28,9 +28,8 @@ static void append_universal_char(
   dest.append(utf8_value);
 }
 
-static void append_universal_char(
-  unsigned int value,
-  std::basic_string<unsigned int> &dest)
+static void
+append_universal_char(unsigned int value, std::basic_string<char32_t> &dest)
 {
   dest.push_back(value);
 }
@@ -153,10 +152,9 @@ std::string unescape_string(const std::string &src)
   return unescape_string_templ<char>(src);
 }
 
-std::basic_string<unsigned int> unescape_wide_string(
-  const std::string &src)
+std::basic_string<char32_t> unescape_wide_string(const std::string &src)
 {
-  return unescape_string_templ<unsigned int>(src);
+  return unescape_string_templ<char32_t>(src);
 }
 
 unsigned hex_to_unsigned(const char *hex, std::size_t digits)

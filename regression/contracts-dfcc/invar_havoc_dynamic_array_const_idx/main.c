@@ -10,7 +10,7 @@ void main()
   data[4] = 0;
 
   for(unsigned i = 0; i < SIZE; i++)
-    __CPROVER_loop_invariant(i <= SIZE)
+    __CPROVER_assigns(data[1], i) __CPROVER_loop_invariant(i <= SIZE)
     {
       data[1] = i;
     }

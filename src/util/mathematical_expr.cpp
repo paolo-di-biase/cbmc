@@ -7,6 +7,8 @@ Author: Daniel Kroening, kroening@kroening.com
 \*******************************************************************/
 
 #include "mathematical_expr.h"
+
+#include "arith_tools.h"
 #include "mathematical_types.h"
 
 function_application_exprt::function_application_exprt(
@@ -48,4 +50,10 @@ lambda_exprt::lambda_exprt(const variablest &_variables, const exprt &_where)
       _where,
       lambda_type(_variables, _where))
 {
+}
+
+power_exprt::power_exprt(const mp_integer &_base, const exprt &_exp)
+  : power_exprt{from_integer(_base, _exp.type()), _exp}
+{
+  PRECONDITION(base().is_not_nil());
 }

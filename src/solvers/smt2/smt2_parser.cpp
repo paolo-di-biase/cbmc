@@ -656,7 +656,7 @@ exprt smt2_parsert::function_application()
           if(next_token() != smt2_tokenizert::NUMERAL)
             throw error() << "expected numeral after " << id;
 
-          auto index = std::stoll(smt2_tokenizer.get_buffer());
+          auto index = string2integer(smt2_tokenizer.get_buffer());
 
           if(next_token() != smt2_tokenizert::CLOSE)
             throw error() << "expected ')' after " << id << " index";
@@ -681,21 +681,21 @@ exprt smt2_parsert::function_application()
             // we first convert to a signed type of the original width,
             // then extend to the new width, and then go to unsigned
             const auto width = to_unsignedbv_type(op[0].type()).get_width();
-            const signedbv_typet small_signed_type(width);
-            const signedbv_typet large_signed_type(width + index);
-            const unsignedbv_typet unsigned_type(width + index);
+            const signedbv_typet small_signed_type{width};
+            const signedbv_typet large_signed_type{width + index};
+            const unsignedbv_typet unsigned_type{width + index};
 
             return typecast_exprt(
               typecast_exprt(
                 typecast_exprt(op[0], small_signed_type), large_signed_type),
               unsigned_type);
           }
-          else if(id=="zero_extend")
+          else if(id == ID_zero_extend)
           {
             auto width=to_unsignedbv_type(op[0].type()).get_width();
-            unsignedbv_typet unsigned_type(width+index);
+            unsignedbv_typet unsigned_type{width + index};
 
-            return typecast_exprt(op[0], unsigned_type);
+            return zero_extend_exprt{op[0], unsigned_type};
           }
           else if(id == ID_repeat)
           {
@@ -1088,11 +1088,25 @@ void smt2_parsert::setup_expressions()
     return from_integer(ieee_floatt::ROUND_TO_EVEN, unsignedbv_typet(32));
   };
 
+  expressions["RNE"] = [] {
+    // we encode as 32-bit unsignedbv
+    return from_integer(ieee_floatt::ROUND_TO_EVEN, unsignedbv_typet(32));
+  };
+
   expressions["roundNearestTiesToAway"] = [this]() -> exprt {
     throw error("unsupported rounding mode");
   };
 
+  expressions["RNA"] = [this]() -> exprt {
+    throw error("unsupported rounding mode");
+  };
+
   expressions["roundTowardPositive"] = [] {
+    // we encode as 32-bit unsignedbv
+    return from_integer(ieee_floatt::ROUND_TO_PLUS_INF, unsignedbv_typet(32));
+  };
+
+  expressions["RTP"] = [] {
     // we encode as 32-bit unsignedbv
     return from_integer(ieee_floatt::ROUND_TO_PLUS_INF, unsignedbv_typet(32));
   };
@@ -1102,7 +1116,17 @@ void smt2_parsert::setup_expressions()
     return from_integer(ieee_floatt::ROUND_TO_MINUS_INF, unsignedbv_typet(32));
   };
 
+  expressions["RTN"] = [] {
+    // we encode as 32-bit unsignedbv
+    return from_integer(ieee_floatt::ROUND_TO_MINUS_INF, unsignedbv_typet(32));
+  };
+
   expressions["roundTowardZero"] = [] {
+    // we encode as 32-bit unsignedbv
+    return from_integer(ieee_floatt::ROUND_TO_ZERO, unsignedbv_typet(32));
+  };
+
+  expressions["RTZ"] = [] {
     // we encode as 32-bit unsignedbv
     return from_integer(ieee_floatt::ROUND_TO_ZERO, unsignedbv_typet(32));
   };

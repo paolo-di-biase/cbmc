@@ -47,12 +47,17 @@ bool cmdlinet::isset(const char *option) const
 
 std::string cmdlinet::get_value(char option) const
 {
+  return value_opt(option).value_or("");
+}
+
+std::optional<std::string> cmdlinet::value_opt(char option) const
+{
   auto i=getoptnr(option);
 
   if(i.has_value() && !options[*i].values.empty())
     return options[*i].values.front();
   else
-    return "";
+    return {};
 }
 
 void cmdlinet::set(const std::string &option, bool value)
@@ -98,12 +103,17 @@ const std::list<std::string> &cmdlinet::get_values(char option) const
 
 std::string cmdlinet::get_value(const char *option) const
 {
+  return value_opt(option).value_or("");
+}
+
+std::optional<std::string> cmdlinet::value_opt(const char *option) const
+{
   auto i=getoptnr(option);
 
   if(i.has_value() && !options[*i].values.empty())
     return options[*i].values.front();
   else
-    return "";
+    return {};
 }
 
 const std::list<std::string> &cmdlinet::get_values(

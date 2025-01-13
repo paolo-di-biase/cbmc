@@ -665,39 +665,8 @@ bvt bv_pointerst::convert_bitvector(const exprt &expr)
           difference, element_size_bv, bv_utilst::representationt::SIGNED);
       }
 
-      // test for null object (integer constants)
-      const exprt null_object = ::null_object(minus_expr.lhs());
-      literalt in_bounds = convert(null_object);
-
-      if(!in_bounds.is_true())
-      {
-        // compute the object size (again, possibly using cached results)
-        const exprt object_size = ::object_size(minus_expr.lhs());
-        const bvt object_size_bv =
-          bv_utils.zero_extension(convert_bv(object_size), width);
-
-        const literalt lhs_in_bounds = prop.land(
-          !bv_utils.sign_bit(lhs_offset),
-          bv_utils.rel(
-            lhs_offset,
-            ID_le,
-            object_size_bv,
-            bv_utilst::representationt::UNSIGNED));
-
-        const literalt rhs_in_bounds = prop.land(
-          !bv_utils.sign_bit(rhs_offset),
-          bv_utils.rel(
-            rhs_offset,
-            ID_le,
-            object_size_bv,
-            bv_utilst::representationt::UNSIGNED));
-
-        in_bounds =
-          prop.lor(in_bounds, prop.land(lhs_in_bounds, rhs_in_bounds));
-      }
-
-      prop.l_set_to_true(prop.limplies(
-        prop.land(same_object_lit, in_bounds), bv_utils.equal(difference, bv)));
+      prop.l_set_to_true(
+        prop.limplies(same_object_lit, bv_utils.equal(difference, bv)));
     }
 
     return bv;

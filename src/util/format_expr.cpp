@@ -190,13 +190,16 @@ static std::ostream &format_rec(std::ostream &os, const constant_exprt &src)
   {
     // These do not have a numerical interpretation.
     // We'll print the 0/1 bit pattern, starting with the bit
-    // that has the highest index.
+    // that has the highest index. We use vector notation
+    // [...] to avoid confusion with decimal numbers.
     auto width = to_bv_type(src.type()).get_width();
     std::string result;
-    result.reserve(width);
+    result.reserve(width + 2);
     auto &value = src.get_value();
+    result += '[';
     for(std::size_t i = 0; i < width; i++)
       result += get_bvrep_bit(value, width, width - i - 1) ? '1' : '0';
+    result += ']';
     return os << result;
   }
   else if(type == ID_integer || type == ID_natural || type == ID_range)
@@ -351,7 +354,8 @@ void format_expr_configt::setup()
   expr_map[ID_floatbv_minus] = ternary_expr;
   expr_map[ID_floatbv_mult] = ternary_expr;
   expr_map[ID_floatbv_div] = ternary_expr;
-  expr_map[ID_floatbv_mod] = ternary_expr;
+  expr_map[ID_floatbv_mod] = binary_infix_expr;
+  expr_map[ID_floatbv_rem] = binary_infix_expr;
 
   expr_map[ID_constant] =
     [](std::ostream &os, const exprt &expr) -> std::ostream & {
@@ -374,6 +378,12 @@ void format_expr_configt::setup()
     [](std::ostream &os, const exprt &expr) -> std::ostream & {
     return os << "cast(" << format(to_typecast_expr(expr).op()) << ", "
               << format(expr.type()) << ')';
+  };
+
+  expr_map[ID_zero_extend] =
+    [](std::ostream &os, const exprt &expr) -> std::ostream & {
+    return os << "zero_extend(" << format(to_zero_extend_expr(expr).op())
+              << ", " << format(expr.type()) << ')';
   };
 
   expr_map[ID_floatbv_typecast] =

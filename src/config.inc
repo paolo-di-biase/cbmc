@@ -42,44 +42,12 @@ ifeq ($(BOOLEFORCE)$(CHAFF)$(GLUCOSE)$(IPASIR)$(LINGELING)$(MINISAT)$(MINISAT2)$
   MINISAT2 = ../../minisat-2.2.1
 endif
 
-ifneq ($(PICOSAT),)
-  CP_CXXFLAGS += -DSATCHECK_PICOSAT
-endif
-
-ifneq ($(LINGELING),)
-  CP_CXXFLAGS += -DSATCHECK_LINGELING
-endif
-
-ifneq ($(CHAFF),)
-  CP_CXXFLAGS += -DSATCHECK_CHAFF
-endif
-
-ifneq ($(BOOLEFORCE),)
-  CP_CXXFLAGS += -DSATCHECK_BOOLEFORCE
-endif
-
-ifneq ($(MINISAT),)
-  CP_CXXFLAGS += -DSATCHECK_MINISAT
-endif
-
-ifneq ($(MINISAT2),)
-  CP_CXXFLAGS += -DSATCHECK_MINISAT2
-endif
-
-ifneq ($(GLUCOSE),)
-  CP_CXXFLAGS += -DSATCHECK_GLUCOSE
-endif
-
-ifneq ($(CADICAL),)
-  CP_CXXFLAGS += -DSATCHECK_CADICAL
-endif
-
 # Signing identity for MacOS Gatekeeper
 
 OSX_IDENTITY="Developer ID Application: Daniel Kroening"
 
 # Detailed version information
-CBMC_VERSION = 6.3.1
+CBMC_VERSION = 6.4.1
 
 # Use the CUDD library for BDDs, can be installed using `make -C src cudd-download`
 # CUDD = ../../cudd-3.0.0

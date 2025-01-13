@@ -107,6 +107,11 @@ public:
   {
   }
 
+  integer_bitvector_typet(const irep_idt &id, const mp_integer &width)
+    : bitvector_typet(id, width)
+  {
+  }
+
   /// Return the smallest value that can be represented using this type.
   mp_integer smallest() const;
   /// Return the largest value that can be represented using this type.
@@ -167,6 +172,11 @@ public:
   {
   }
 
+  explicit unsignedbv_typet(const mp_integer &width)
+    : integer_bitvector_typet(ID_unsignedbv, width)
+  {
+  }
+
   static void check(
     const typet &type,
     const validation_modet vm = validation_modet::INVARIANT)
@@ -212,6 +222,11 @@ class signedbv_typet : public integer_bitvector_typet
 {
 public:
   explicit signedbv_typet(std::size_t width)
+    : integer_bitvector_typet(ID_signedbv, width)
+  {
+  }
+
+  explicit signedbv_typet(const mp_integer &width)
     : integer_bitvector_typet(ID_signedbv, width)
   {
   }

@@ -6,7 +6,7 @@ void main()
   x = z;
 
   while(y > 0)
-    __CPROVER_loop_invariant(x == __CPROVER_loop_entry(x))
+    __CPROVER_loop_invariant(y >= 0 && x == __CPROVER_loop_entry(x))
     {
       --y;
       x = x + 1;

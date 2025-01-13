@@ -30,5 +30,5 @@ TEST_CASE("Format a bv-typed constant", "[core][util][format_expr]")
 {
   auto value = make_bvrep(4, [](std::size_t index) { return index != 2; });
   auto expr = constant_exprt{value, bv_typet{4}};
-  REQUIRE(format_to_string(expr) == "1011");
+  REQUIRE(format_to_string(expr) == "[1011]");
 }
